@@ -41,6 +41,14 @@ type Router struct {
 	RoutePaths  map[string]string
 }
 
+func NewRouter() *Router {
+	return &Router{
+		Mux:         http.NewServeMux(),
+		middlewares: []func(http.Handler) http.Handler{},
+		RoutePaths:  map[string]string{},
+	}
+}
+
 func (rter *Router) VersionString(version_string string) *Router {
 	rter.version = version_string
 	return rter
