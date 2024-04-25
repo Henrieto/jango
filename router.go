@@ -3,6 +3,7 @@ package jango
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Route struct {
@@ -26,11 +27,12 @@ func (rte *Route) Name(name string) *Route {
 }
 
 func (rte *Route) Handle(rter *Router) {
-	rter.RoutePaths[rte.name] = rte.Path
+	_path := rter.prefix + rte.Path
+	rter.RoutePaths[rte.name] = _path
 	if rte.method != "" {
-		rte.Path = fmt.Sprintf("%v %v", rte.method, rte.Path)
+		_path = fmt.Sprintf("%v %v", rte.method, rte.Path)
 	}
-	rter.Mux.HandleFunc(rte.Path, rte.Handler)
+	rter.Mux.HandleFunc(_path, rte.Handler)
 }
 
 type Router struct {
@@ -50,6 +52,7 @@ func NewRouter() *Router {
 }
 
 func (rter *Router) VersionString(version_string string) *Router {
+	version_string = strings.Replace(version_string, "/", "", -1)
 	rter.version = version_string
 	return rter
 }

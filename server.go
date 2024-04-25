@@ -74,6 +74,8 @@ func (server *Server) initialize_middlewares() {
 
 func (server *Server) Start() (err error) {
 
+	server.Handler = server.router.Mux
+
 	server.initialize_middlewares()
 
 	if SERVER_ADDRESS == "" {
