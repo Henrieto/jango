@@ -72,6 +72,12 @@ func (server *Server) initialize_middlewares() {
 	}
 }
 
+func (server *Server) Use(middlewares ...func(http.Handler) http.Handler) {
+	for _, middleware := range middlewares {
+		server.Handler = middleware(server.Handler)
+	}
+}
+
 func (server *Server) Start() (err error) {
 
 	server.Handler = server.router.Mux
