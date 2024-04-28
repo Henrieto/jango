@@ -78,8 +78,15 @@ func (server *Server) Use(middlewares ...func(http.Handler) http.Handler) {
 	}
 }
 
-func (server *Server) Start() (err error) {
+func (server *Server) AddHealthCheck(handlers ...http.HandlerFunc) {
+	if len(handlers) == 0 {
+		server.router.Mux.HandleFunc("/server/health", HealthCheck)
+	} else {
+		server.router.Mux.HandleFunc("/server/health", handlers[0])
+	}
+}
 
+func (server *Server) Start() (err error) {
 	server.Handler = server.router.Mux
 
 	server.initialize_middlewares()
