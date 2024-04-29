@@ -6,9 +6,9 @@ import (
 )
 
 type Response struct {
-	Status string
-	Msg    string
-	Data   any
+	Status string `json:"status,omitempty"`
+	Msg    string `json:"msg,omitempty"`
+	Data   any    `json:"data,omitempty"`
 }
 
 func StandardJsonResponse(writer http.ResponseWriter, status, msg string, data any, status_code ...int) error {
