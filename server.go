@@ -8,8 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/rs/cors"
 )
 
 var (
@@ -27,15 +25,6 @@ var (
 
 	//other server credentials
 	SERVER_ADDRESS = ""
-
-	// cors credentials
-	AllowedOrigins = []string{}
-
-	AllowedHeaders = []string{}
-
-	AllowedMethods = []string{}
-
-	AllowCredentials = true
 )
 
 type Server struct {
@@ -56,16 +45,6 @@ func NewServer(router *Router, use_tls bool) *Server {
 	}
 }
 
-func (server *Server) UseCors() {
-	options := cors.Options{
-		AllowedOrigins:   AllowedOrigins,
-		AllowedHeaders:   AllowedHeaders,
-		AllowedMethods:   AllowedMethods,
-		AllowCredentials: AllowCredentials,
-	}
-	server.Handler = cors.New(options).Handler(server.Handler)
-}
-
 func (server *Server) initialize_middlewares() {
 	for _, middlewares := range server.router.middlewares {
 		server.Handler = middlewares(server.Handler)
@@ -78,18 +57,7 @@ func (server *Server) Use(middlewares ...func(http.Handler) http.Handler) {
 	}
 }
 
-func (server *Server) AddHealthCheck(handlers ...http.HandlerFunc) {
-	if len(handlers) == 0 {
-		server.router.Mux.HandleFunc("/server/health", HealthCheck)
-	} else {
-		server.router.Mux.HandleFunc("/server/health", handlers[0])
-	}
-}
-
 func (server *Server) Start() (err error) {
-	server.Handler = server.router.Mux
-
-	server.initialize_middlewares()
 
 	if SERVER_ADDRESS == "" {
 		SERVER_ADDRESS = ":8080"
@@ -111,7 +79,19 @@ func (server *Server) Start() (err error) {
 	return
 }
 
-func (server *Server) Listen() error {
+func (server *Server) applyOptions(options ...OptionFunc) {
+	for _, optionFunc := range options {
+		optionFunc(server)
+	}
+}
+
+func (server *Server) Listen(options ...OptionFunc) error {
+
+	server.Handler = server.router.Mux
+
+	server.initialize_middlewares()
+
+	server.applyOptions(options...)
 
 	var err error
 
